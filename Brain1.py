@@ -11,6 +11,7 @@ class Brain1:
         self.current_pos = []
         self.position = None
         self.degree = None
+        self.steer_flag = 0
 
     def run(self):
         while True:
@@ -79,34 +80,32 @@ class Brain1:
 
             # print(self.crossing.keys())
 
-            self.steer_forward()
-            if self.database.car.speed <= 7:
-                self.up()
-            elif self.database.car.speed > 7:
-                self.down()
+            # self.steer_forward()
+            # if self.database.car.speed <= 7:
+            #     self.up()
+            # elif self.database.car.speed > 7:
+            #     self.down()
             
             
-            if self.database.lidar.data!=None:
-                self.go(self.database.lidar.data[90],self.database.car.speed)
+            # if self.database.lidar.data!=None:
+            #     self.go(self.database.lidar.data[90],self.database.car.speed)
+
+            if self.database.lidar.data is not None:
+
+                if self.steer_flag == 0:
+                    self.steer_forward(self.database.lidar.data[90], self.database.car.speed)
+                elif self.steer_flag == 1:
+                    self.steer_right()
+                elif self.steer_flag == - 1:
+                    self.steer_left()
+                else:
+                    self.steer_backward()
+    
                 
 
 
 
 
-
-
-    def go(self,lidar : int ,speed : int):
-        if speed==15:
-            a=0
-        else:
-            if lidar==100:
-               self.up(15)
-            elif speed==2:
-                self.down(2)
-                self.down()
-            elif lidar!=100:
-                self.down()
-                print(speed)
 
     def up(self, num: int = 1):
         for i in range(num):
@@ -158,42 +157,59 @@ class Brain1:
         self.global_path.append(min_index)
         
 
+    def steer_forward(self, lidar : int, speed : int):
+        front_right = np.average(self.database.lidar.data[0:59])
+        front_left = np.average(self.database.lidar.data[120:179])
+        
+        self.position = (front_left - front_right) / (front_right + front_left)
+
+        if self.position > 0:
+            self.database.control.left()
+        else:
+            self.database.control.right()
 
 
-    def steer_forward(self):
-        if self.database.lidar.data is not None:
-            front_right = np.average(self.database.lidar.data[0:59])
-            front_left = np.average(self.database.lidar.data[120:179])
+        if self.database.lidar.data[89] < 100 and front_left < front_right:
+            self.degree = self.database.car.direction
+            self.steer_flag = 1
+        elif self.database.lidar.data[89] < 100 and front_left > front_right:
+            self.degree = self.database.car.direction
+            self.steer_flag = -1
             
-            # print(front_right, front_left)
 
-            # self.position = (self.database.lidar.data[179] - self.database.lidar.data[0]) / (self.database.lidar.data[0] + self.database.lidar.data[179])
-            self.position = (front_left - front_right) / (front_right + front_left)
+        if lidar==100:
+                self.up(15)
+        elif lidar!=100:
+            if speed>5:
+                self.down(3)
 
-            if self.position > 0:
-                self.database.control.left()
-            else:
-                self.database.control.right()
-            
-                
-
-
-            print(self.position, self.database.car.direction)
-
-
-
+        print('forward', self.position, self.database.car.direction)
 
 
 
     def steer_backward(self):
+
+
+
         pass
 
     def steer_right(self):
-        pass
+
+        print('right', self.degree, self.database.car.direction, self.database.lidar.data[89])
+        self.right(8)
+
+        if abs(self.database.car.direction - self.degree) >= 90:
+            self.steer_flag = 0
+
+
 
     def steer_left(self):
-        pass
 
+        print('left', self.degree, self.database.car.direction, self.database.lidar.data[89])
+        self.left(8)
+        print(self.database.car.direction)
+        if abs(self.database.car.direction - self.degree) >= 90:
+            self.steer_flag = 0
     # def first_waypoint(self):
     #     current_pos = self.database.car.position
     #     (trophy_x, trophy_y) = self.database.v2x_data['Trophy']
