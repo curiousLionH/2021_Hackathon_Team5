@@ -240,17 +240,10 @@ class Brain1:
 
     def steer_right(self):
         self.velocity_control(5)
+        print('right', self.degree, self.database.car.direction, self.database.lidar.data[89])
+        for i in range(8):
+            self.right(8)
 
-        # print('right', self.degree, self.database.car.direction, self.database.lidar.data[89])
-        self.right(8)
-        self.right(8)
-        
-        self.right(8)
-        self.right(8)
-        self.right(8)
-        self.right(8)
-        self.right(8)
-        self.right(8)
         if abs(self.database.car.direction - self.degree) >= 90:
             self.steer_flag = 0
                
@@ -259,17 +252,10 @@ class Brain1:
 
     def steer_left(self):
         self.velocity_control(5)
+        print('left', self.degree, self.database.car.direction, self.database.lidar.data[89])
+        for i in range(8):
+            self.left(8)
 
-        # print('left', self.degree, self.database.car.direction, self.database.lidar.data[89])
-        self.left(8)
-        self.left(8)
-        
-        self.left(8)
-        self.left(8)
-        self.left(8)
-        self.left(8)
-        self.left(8)
-        self.left(8)
         if abs(self.database.car.direction - self.degree) >= 90:
             self.steer_flag = 0
 
@@ -277,7 +263,7 @@ class Brain1:
 
     def velocity_control(self, speed):
         if self.database.car.speed >= speed:
-            self.down()
+            self.down(2)
         else:
             self.up()
 
