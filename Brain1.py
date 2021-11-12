@@ -1,6 +1,6 @@
 import time
 import pygame
-
+import numpy as np
 
 class Brain1:
     def __init__(self, database):
@@ -9,6 +9,8 @@ class Brain1:
         self.trophy_x, self.trophy_y = 0, 0
         self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
         self.current_pos = []
+        self.position = None
+        self.degree = None
 
     def run(self):
         while True:
@@ -61,7 +63,6 @@ class Brain1:
             # Implement Your Algorithm HERE!!
 
             # EXAMPLE CODE1: 속도 3으로 유지하면서 오른쪽으로 회전하기
-            self.right()
 
             # print(self.database.v2x_data)
 
@@ -78,10 +79,12 @@ class Brain1:
 
             # print(self.crossing.keys())
 
+            self.steer_forward()
             if self.database.car.speed <= 2:
                 self.up()
             elif self.database.car.speed > 3:
                 self.down()
+
 
     def up(self, num: int = 1):
         for i in range(num):
@@ -131,6 +134,54 @@ class Brain1:
                 min_index = i
         print(min_index)        # 테스트용
         self.global_path.append(min_index)
+        
+
+
+
+    def steer_forward(self):
+        if self.database.lidar.data is not None:
+            front_right = np.average(self.database.lidar.data[0:89])
+            front_left = np.average(self.database.lidar.data[91:179])
+            
+            # print(front_right, front_left)
+
+            # self.position = (self.database.lidar.data[179] - self.database.lidar.data[0]) / (self.database.lidar.data[0] + self.database.lidar.data[179])
+            self.position = (front_left - front_right) / (front_right + front_left)
+
+            if self.position < 0:
+                self.left(abs(self.position))
+            else:
+                self.right(self.position)
+                
+
+
+        print(self.position)
+
+
+
+
+
+
+    def steer_backward(self):
+        pass
+
+    def steer_right(self):
+        pass
+
+    def steer_left(self):
+        pass
+
+    # def first_waypoint(self):
+    #     current_pos = self.database.car.position
+    #     (trophy_x, trophy_y) = self.database.v2x_data['Trophy']
+    #     if current_pos[1] >= 400:
+    #         if current_pos[0] <= 350:
+    #             # 4, 2
+    #             trophy_x - 
 
         
+
+
+    def path(self):
+        self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
 
