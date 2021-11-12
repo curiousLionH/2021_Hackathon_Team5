@@ -28,6 +28,20 @@ class Brain1:
             time.sleep(0.001)
             _ = pygame.event.get()
 
+           # print("start")
+
+            if len(self.global_path) < 2:
+                # print("hello")
+                if self.database.car.position is not None:
+                    self.current_pos = self.database.car.position
+                    # print(self.current_pos)
+            
+                if 'Trophy' in self.database.v2x_data.keys():
+                    (self.trophy_x, self.trophy_y) = self.database.v2x_data['Trophy']
+                    self.first_waypoint()
+                    self.global_path_planning()
+                    # print(self.database.v2x_data['Trophy'])
+
             
             '''
             ☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆
@@ -74,14 +88,15 @@ class Brain1:
 
             # print(self.database.v2x_data)
 
-            if self.database.car.position is not None:
-                self.current_pos = self.database.car.position
-                # print(self.current_pos)
+            # if self.database.car.position is not None:
+            #     self.current_pos = self.database.car.position
+            #     # print(self.current_pos)
             
-                if 'Trophy' in self.database.v2x_data.keys():
-                    (self.trophy_x, self.trophy_y) = self.database.v2x_data['Trophy']
-                    self.first_waypoint()
-                    # print(self.database.v2x_data['Trophy'])
+            #     if 'Trophy' in self.database.v2x_data.keys():
+            #         (self.trophy_x, self.trophy_y) = self.database.v2x_data['Trophy']
+            #         self.first_waypoint()
+            #         self.global_path_planning()
+            #         # print(self.database.v2x_data['Trophy'])
 
             # self.first_waypoint()
 
@@ -161,26 +176,36 @@ class Brain1:
             if min_dist > dist:
                 min_dist = dist
                 min_index = i
-        # print(min_index)        # 테스트용
+        print("first way point", min_index)        # 테스트용
         self.global_path.append(min_index)
 
  
     def global_path_planning(self):
-        current_index = self.global_path[0]
-        list = self.global_path_dict[current_index]
-        min_dist = 100000000000000000000000000
-        min_index = 0
-        for i in list:
-            (cross_x, cross_y) = self.crossing[i]
-            dist = (self.trophy_x - cross_x)**2 + (self.trophy_y - cross_y)**2
-            if min_dist > dist:
-                min_dist = dist
-                min_index = i
-        if min_index in self.global_path:
-            print(self.global_path)
-            return
-        self.global_path.append(min_index)   
-        
+        while True:
+            current_index = self.global_path[len(self.global_path)-1]
+            list = self.global_path_dict[current_index]
+            min_dist = 100000000000000000000000000
+            min_index = 0
+            for i in list:
+                (cross_x, cross_y) = self.crossing[i]
+                dist = (self.trophy_x - cross_x)**2 + (self.trophy_y - cross_y)**2
+                if min_dist > dist:
+                    min_dist = dist
+                    min_index = i
+                    print("global path planning", min_dist, min_index)
+
+            prev_index = self.global_path[len(self.global_path)-1]
+            (prev_cross_x, prev_cross_y) = self.crossing[prev_index]
+
+            if min_index in self.global_path:
+                print("global path", self.global_path)
+                break
+            elif min_dist > (self.trophy_x - prev_cross_x)**2 + (self.trophy_y - prev_cross_y)**2:
+                print("global path", self.global_path)
+                break
+            else:
+                self.global_path.append(min_index)   
+            
 
     def steer_forward(self, lidar : int, speed : int):
 
@@ -256,6 +281,7 @@ class Brain1:
         for i in range(8):
             self.left(8)
 
+
         if abs(self.database.car.direction - self.degree) >= 90:
             self.steer_flag = 0
 
@@ -267,22 +293,7 @@ class Brain1:
         else:
             self.up()
 
-
-    # def first_waypoint(self):
-    #     current_pos = self.database.car.position
-    #     (trophy_x, trophy_y) = self.database.v2x_data['Trophy']
-    #     if current_pos[1] >= 400:
-    #         if current_pos[0] <= 350:
-    #             # 4, 2
-    #             trophy_x - 
-
-
-
-    def path(self):
-        self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
-
     def respawnpoint(self):
-    def respawn(self):
             closestpoint = self.respawn_points[0]
             min_dist = (self.trophy_x - closestpoint[0])**2 + (self.trophy_y - closestpoint[1])**2
             for i in self.respawn_points:
@@ -301,7 +312,7 @@ class Brain1:
         cur_dist = (self.trophy_x - self.current_pos[0])**2 + (self.trophy_y - self.current_pos[0])**2 
         min_dist = (self.trophy_x - self.startpoint[0])**2 + (self.trophy_y - self.startpoint[0])**2
         if cur_dist > min_dist:
-            steer_left()
+            self.steer_left()
 
 
 
