@@ -12,8 +12,8 @@ class Brain1:
         self.trophy_x, self.trophy_y = 0, 0
         self.prev_trophy_x, self.prev_trophy_y = 0, 0
         self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
-        self.previous_pos = []
-        self.current_pos = []
+        self.previous_pos = [0, 0]
+        self.current_pos = [0, 0]
         self.car_direction = 0
         self.lidar = []
         self.respawn_points = [[50, 50], [50, 750], [950, 50], [950, 750]]
@@ -54,38 +54,41 @@ class Brain1:
                 break
 
 
-            if self.respawn_car_flag or self.respawn_trophy_flag:      
+            if self.respawn_car_flag() or self.respawn_trophy_flag():      
                 self.first_waypoint()
                 self.global_path_planning()
                 # print(self.database.v2x_data['Trophy'])
+            
 
 
+            # self.curr_dest_index = 0    # 고정
+            self.curr_dest_x, self.curr_dest_y = self.crossing[self.global_path[0]]
+            angle_error = np.arctan2((self.curr_dest_y - self.current_pos[1]),(self.curr_dest_x - self.current_pos[0])) * 180/pi
+            angle_error = angle_error - ((-1)*(self.car_direction) + 180)
+
+            self.steer_flag = self.steering_flag(angle_error)           
+
+
+                
+            if self.steer_flag == 0:
+                self.steer_forward(self.lidar[90], self.database.car.speed)
+            elif self.steer_flag == 1:
+                self.steer_right()
+            elif self.steer_flag == - 1:
+                self.steer_left()
             else:
-                # self.curr_dest_index = 0    # 고정
-                self.curr_dest_x, self.curr_dest_y = self.crossing[self.global_path[0]]
-                angle_error = np.arctan2((self.curr_dest_y - self.current_pos[1]),(self.curr_dest_x - self.current_pos[0])) * 180/pi
-                angle_error = angle_error - ((-1)*(self.car_direction) + 180)
-
-                self.steer_flag = self.steering_flag(angle_error)           
+                self.steer_backward()
+            #print(self.database.v2x_data.keys())
 
 
-                    
-                if self.steer_flag == 0:
-                    self.steer_forward(self.lidar[90], self.database.car.speed)
-                elif self.steer_flag == 1:
-                    self.steer_right()
-                elif self.steer_flag == - 1:
-                    self.steer_left()
-                else:
-                    self.steer_backward()
-                #print(self.database.v2x_data.keys())
+            if self.reach():
+                self.global_path.remove(self.global_path[0])
+
+            self.previous_pos = self.current_pos
+            self.prev_trophy_x, self.prev_trophy_y = self.trophy_x, self.trophy_y
 
 
-                if self.reach():
-                    self.global_path.remove(self.global_path[0])
-
-                self.previous_pos = self.current_pos
-                self.prev_trophy_x, self.prev_trophy_y = self.trophy_x, self.trophy_y 
+                 
 
                 
     
