@@ -22,10 +22,26 @@ class Brain1:
         self.position = 0
         self.degree = 0
         self.steer_flag = 0
-        self.global_path_dict = {1:[2,3], 2:[1,3,4], 3:[1,2,4,5], 4:[2,3], 5:[3,6,7], 6:[5,10], 7:[5,8,9,10], 8:[7,9], 9:[7,8], 10:[6,7,9]}
+        self.global_path_dict = {1:[2,3], 2:[1,3,4], 3:[1,2,4,5], 4:[2,3], 5:[3,6,7], 6:[5,10], 7:[5,8,9,10], 8:[7,9], 9:[7,8], 10:[6,7]}
         self.curr_dest_index = 0
         self.curr_dest_x, self.curr_dest_y = 0, 0
         self.crosswalk_point = []
+        self.global_path_point = []
+
+        self.onetwo = [(250, 250), (50, 250)]
+        self.onethree = [(250, 50), (450, 50), (450, 150), (350, 150)]
+        self.twothree = []
+        self.twofour = [(50, 550)]
+        self.threefour = [(350, 750), (250, 750)]
+        self.threefive = []
+        self.fivesix = []
+        self.fiveseven = []
+        self.sixten = [(700, 300), (700, 50), (950, 50)]
+        self.seveneight = [(700, 500)]
+        self.sevennine = []
+        self.seventen = [(810, 400), (810, 150)]
+        self.eightnine = [(700, 500)]
+        
 
     def run(self):
         while True:
@@ -61,9 +77,14 @@ class Brain1:
 
 
             if self.respawn_car_flag() or self.respawn_trophy_flag():
-                self.global_path_dict[11] = (self.trophy_x, self.trophy_y)      
+                self.crossing[11] = (self.trophy_x, self.trophy_y)
+                self.global_path_point = []      
                 self.first_waypoint()
                 self.global_path_planning()
+                
+                # for key in self.global_path:
+                #     self.global_path_point.append(self.crossing[key])
+                print(self.global_path_point)
                 
 
                 # print(self.database.v2x_data['Trophy'])
@@ -211,6 +232,7 @@ class Brain1:
                 min_index = i
         print("first way point", min_index)        # 테스트용
         self.global_path.append(min_index)
+        self.global_path_point.append(self.crossing[min_index])
 
  
     def global_path_planning(self):
@@ -232,14 +254,87 @@ class Brain1:
 
             if min_index in self.global_path:
                 self.global_path.append(11)
+                self.global_path_point.append(self.crossing[11])
                 print("global path", self.global_path)
                 break
             elif min_dist > (self.trophy_x - prev_cross_x)**2 + (self.trophy_y - prev_cross_y)**2:
                 self.global_path.append(11)
+                self.global_path_point.append(self.crossing[11])
                 print("global path", self.global_path)
                 break
             else:
-                self.global_path.append(min_index)   
+                temp = self.path_maker(prev_index, min_index)
+                if temp is not None:
+                    for i in temp:
+                        self.global_path_point.append(i)
+                self.global_path.append(min_index)
+                self.global_path_point.append(self.crossing[min_index])
+
+    def path_maker(self, prev, curr):
+        if prev == 1:
+            if curr == 2:
+                return self.onetwo
+            if curr == 3:
+                return self.onethree
+        elif prev == 2:
+            if curr == 1:
+                return self.onetwo.reverse
+            if curr == 3:
+                return None
+            if curr == 4:
+                return self.twofour
+        elif prev == 3:
+            if curr == 1:
+                return self.onethree.reverse
+            if curr == 2:
+                return None
+            if curr == 4:
+                return self.threefour
+            if curr == 5:
+                return None
+        elif prev == 4:
+            if curr == 2:
+                return self.twofour.reverse
+            if curr == 3:
+                return self.threefour.reverse
+        elif prev == 5:
+            return None
+        elif prev == 6:
+            if curr == 5:
+                return None
+            if curr == 10:
+                return self.sixten
+        elif prev == 7:
+            if curr == 5:
+                return None
+            if curr == 8:
+                return self.seveneight
+            if curr == 9:
+                return None
+            if curr == 10:
+                return self.seventen
+        elif prev == 8:
+            if curr == 7:
+                return self.seveneight.reverse
+            if curr == 9:
+                return self.eightnine
+        elif prev == 9:
+            if curr == 7:
+                return None
+            if curr == 8:
+                return self.eightnine.reverse
+        elif prev == 10:
+            if curr == 6:
+                return self.sixten.reverse
+            if curr == 7:
+                return self.seventen.reverse
+
+
+
+
+        
+
+
 
     def reach(self):
         dist = (self.curr_dest_x - self.current_pos[0])**2 + (self.curr_dest_y - self.current_pos[1])**2
