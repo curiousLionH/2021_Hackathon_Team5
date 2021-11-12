@@ -226,7 +226,7 @@ class Brain1:
     def path(self):
         self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
 
-    def respawn(self):
+    def respawnpoint(self):
             closestpoint = self.respawn_points[0]
             min_dist = (self.trophy_x - closestpoint[0])**2 + (self.trophy_y - closestpoint[1])**2
             for i in self.respawn_points:
@@ -240,3 +240,9 @@ class Brain1:
                 closestpoint = self.current_pos
             self.startpoint.append(closestpoint[0])
             self.startpoint.append(closestpoint[1])
+            
+    def respawn(self):
+        cur_dist = (self.trophy_x - self.current_pos[0])**2 + (self.trophy_y - self.current_pos[0])**2 
+        min_dist = (self.trophy_x - self.startpoint[0])**2 + (self.trophy_y - self.startpoint[0])**2
+        if cur_dist > min_dist:
+            steer_left()
