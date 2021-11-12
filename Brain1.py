@@ -11,7 +11,7 @@ class Brain1:
         self.global_path = []
         self.trophy_x, self.trophy_y = 0, 0
         self.prev_trophy_x, self.prev_trophy_y = 0, 0
-        self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
+        self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150), 11:(0,0)}
         self.previous_pos = [0, 0]
         self.current_pos = [0, 0]        
         self.car_direction = 0
@@ -60,9 +60,12 @@ class Brain1:
                 break
 
 
-            if self.respawn_car_flag() or self.respawn_trophy_flag():      
+            if self.respawn_car_flag() or self.respawn_trophy_flag():
+                self.global_path_dict[11] = (self.trophy_x, self.trophy_y)      
                 self.first_waypoint()
                 self.global_path_planning()
+                
+
                 # print(self.database.v2x_data['Trophy'])
 
             
@@ -228,9 +231,11 @@ class Brain1:
             (prev_cross_x, prev_cross_y) = self.crossing[prev_index]
 
             if min_index in self.global_path:
+                self.global_path.append(11)
                 print("global path", self.global_path)
                 break
             elif min_dist > (self.trophy_x - prev_cross_x)**2 + (self.trophy_y - prev_cross_y)**2:
+                self.global_path.append(11)
                 print("global path", self.global_path)
                 break
             else:
