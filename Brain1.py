@@ -14,6 +14,8 @@ class Brain1:
         self.position = None
         self.degree = None
         self.steer_flag = 0
+        self.global_path_dict = {1:[2,3], 2:[1,3,4], 3:[1,2,4,5], 4:[2,3], 5:[3,6,7], 6:[5,10], 7:[5,8,9,10], 8:[7,9], 9:[7,8], 10:[6,7,9]}
+
 
     def run(self):
         while True:
@@ -157,6 +159,23 @@ class Brain1:
                 min_index = i
         # print(min_index)        # 테스트용
         self.global_path.append(min_index)
+
+ 
+    def global_path_planning(self):
+        current_index = self.global_path[0]
+        list = self.global_path_dict[current_index]
+        min_dist = 100000000000000000000000000
+        min_index = 0
+        for i in list:
+            (cross_x, cross_y) = self.crossing[i]
+            dist = (self.trophy_x - cross_x)**2 + (self.trophy_y - cross_y)**2
+            if min_dist > dist:
+                min_dist = dist
+                min_index = i
+        if min_index in self.global_path:
+            print(self.global_path)
+            return
+        self.global_path.append(min_index)   
         
 
     def steer_forward(self, lidar : int, speed : int):
@@ -197,7 +216,7 @@ class Brain1:
 
     def steer_right(self):
 
-        print('right', self.degree, self.database.car.direction, self.database.lidar.data[89])
+        # print('right', self.degree, self.database.car.direction, self.database.lidar.data[89])
         self.right(8)
 
         if abs(self.database.car.direction - self.degree) >= 90:
@@ -207,24 +226,12 @@ class Brain1:
 
     def steer_left(self):
 
-        print('left', self.degree, self.database.car.direction, self.database.lidar.data[89])
+        # print('left', self.degree, self.database.car.direction, self.database.lidar.data[89])
         self.left(8)
         print(self.database.car.direction)
         if abs(self.database.car.direction - self.degree) >= 90:
             self.steer_flag = 0
-    # def first_waypoint(self):
-    #     current_pos = self.database.car.position
-    #     (trophy_x, trophy_y) = self.database.v2x_data['Trophy']
-    #     if current_pos[1] >= 400:
-    #         if current_pos[0] <= 350:
-    #             # 4, 2
-    #             trophy_x - 
 
-        
-
-
-    def path(self):
-        self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
 
     def respawn(self):
             closestpoint = self.respawn_points[0]
