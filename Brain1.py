@@ -112,10 +112,9 @@ class Brain1:
             self.crosswalk()
             if len(self.crosswalk_point) > 0:
                 if self.crosswalk_reach_flag():
-                    if self.database.car.speed <= 0:
-                        self.up()
-                    elif self.database.car.speed > 0:
-                        self.down(4)
+                    print("신호등")
+                    self.velocity_control(0, 15)
+
                    
                    
 
@@ -130,7 +129,7 @@ class Brain1:
 
             self.calculation_car_yaw()
 
-            print(self.steer_flag)
+            # print(self.steer_flag)
             if self.steer_flag == 0:
                 self.steer_forward(self.lidar[90], self.car_speed)
             elif self.steer_flag == 1:
@@ -262,7 +261,7 @@ class Brain1:
         crosswalk = list(self.database.v2x_data.values())
         for i in range(1, len(crosswalk)):
             if crosswalk[i][1] == 'red':
-                print("crosswalk print", crosswalk[i][2])
+                # print("crosswalk print", crosswalk[i][2])
                 self.crosswalk_point.append(crosswalk[i][2])
         # print("end")
 
@@ -270,7 +269,7 @@ class Brain1:
         for i in self.crosswalk_point:
             (crosswalk_x, crosswalk_y) = i
         dist = (crosswalk_x - self.current_pos[0])**2 + (crosswalk_y - self.current_pos[1])**2  
-        if dist < 3500:     # 3500은 실험값
+        if dist < 5000:     # 3500은 실험값
             return True
         else:
             return False 
@@ -299,14 +298,14 @@ class Brain1:
         self.degree = self.car_direction
 
 
-        print('forward', self.position, self.car_direction, self.car_yaw % 90)
+        # print('forward', self.position, self.car_direction, self.car_yaw % 90)
         if lidar == 100:
             self.velocity_control(15)
         elif lidar < 100:
             self.velocity_control(6)
 
         if self.car_yaw % 90 == 0: 
-            print('그냥 직진')
+            # print('그냥 직진')
             pass
         else:
 
@@ -340,7 +339,7 @@ class Brain1:
 
     def steer_right(self):
         self.velocity_control(6)
-        print('right', self.degree, self.car_direction, self.lidar[89])
+        # print('right', self.degree, self.car_direction, self.lidar[89])
         for i in range(8):
             self.right(8)
 
@@ -352,7 +351,7 @@ class Brain1:
 
     def steer_left(self):
         self.velocity_control(6)
-        print('left', self.degree, self.car_direction, self.lidar[89])
+        # print('left', self.degree, self.car_direction, self.lidar[89])
         for i in range(8):
             self.left(8)
 
@@ -362,9 +361,9 @@ class Brain1:
 
 
 
-    def velocity_control(self, speed):
+    def velocity_control(self, speed, down=10):
         if self.database.car.speed >= speed:
-            self.down(10)
+            self.down(down)
         else:
             self.up()
 
