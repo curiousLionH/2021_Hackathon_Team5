@@ -84,7 +84,29 @@ class Brain1:
                 self.up()
             elif self.database.car.speed > 3:
                 self.down()
+            
+            
+            if self.database.lidar.data!=None:
+                self.go(self.database.lidar.data[90],self.database.car.speed)
+                
 
+
+
+
+
+
+    def go(self,lidar : int ,speed : int):
+        if speed==15:
+            a=0
+        else:
+            if lidar==100:
+               self.up(15)
+            elif speed==2:
+                self.down(2)
+                self.down()
+            elif lidar!=100:
+                self.down()
+                print(speed)
 
     def up(self, num: int = 1):
         for i in range(num):
