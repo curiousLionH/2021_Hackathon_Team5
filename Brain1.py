@@ -25,6 +25,7 @@ class Brain1:
         self.global_path_dict = {1:[2,3], 2:[1,3,4], 3:[1,2,4,5], 4:[2,3], 5:[3,6,7], 6:[5,10], 7:[5,8,9,10], 8:[7,9], 9:[7,8], 10:[6,7,9]}
         self.curr_dest_index = 0
         self.curr_dest_x, self.curr_dest_y = 0, 0
+        self.crosswalk_point = []
 
     def run(self):
         while True:
@@ -108,6 +109,16 @@ class Brain1:
 
             # EXAMPLE CODE1: 속도 3으로 유지하면서 오른쪽으로 회전하기
 
+            self.crosswalk()
+            if len(self.crosswalk_point) > 0:
+                if self.crosswalk_reach_flag():
+                    if self.database.car.speed <= 0:
+                        self.up()
+                    elif self.database.car.speed > 0:
+                        self.down(4)
+                   
+                   
+
 
             # self.curr_dest_index = 0    # 고정
             self.curr_dest_x, self.curr_dest_y = self.crossing[self.global_path[0]]
@@ -135,6 +146,7 @@ class Brain1:
 
             self.previous_pos = self.current_pos
             self.prev_trophy_x, self.prev_trophy_y = self.trophy_x, self.trophy_y
+            # self.crosswalk()
 
 
 
@@ -244,6 +256,24 @@ class Brain1:
             return True
         else:
             return False
+
+    def crosswalk(self):
+        self.crosswalk_point = []
+        crosswalk = list(self.database.v2x_data.values())
+        for i in range(1, len(crosswalk)):
+            if crosswalk[i][1] == 'red':
+                print("crosswalk print", crosswalk[i][2])
+                self.crosswalk_point.append(crosswalk[i][2])
+        # print("end")
+
+    def crosswalk_reach_flag(self):
+        for i in self.crosswalk_point:
+            (crosswalk_x, crosswalk_y) = i
+        dist = (crosswalk_x - self.current_pos[0])**2 + (crosswalk_y - self.current_pos[1])**2  
+        if dist < 3500:     # 3500은 실험값
+            return True
+        else:
+            return False 
 
 
     def calculation_car_yaw(self):
