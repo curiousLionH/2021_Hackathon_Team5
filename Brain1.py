@@ -9,6 +9,8 @@ class Brain1:
         self.trophy_x, self.trophy_y = 0, 0
         self.crossing={1:(250,150),2:(50,400),3:(350,400),4:(250,550),5:(550,400),6:(550,300),7:(700,400),8:(600,500),9:(700,600),10:(950,150)}
         self.current_pos = []
+        self.respawn_points = [[50, 50], [50, 750], [950, 50], [950, 750]]
+        self.startpoint = []    # 현위치, 리스폰점 4개 중 트로피랑 가장 가까운 점
         self.position = None
         self.degree = None
         self.steer_flag = 0
@@ -162,6 +164,20 @@ class Brain1:
         front_left = np.average(self.database.lidar.data[120:179])
         
         self.position = (front_left - front_right) / (front_right + front_left)
+    def respawn(self):
+        closestpoint = self.respawn_points[0]
+        min_dist = (self.trophy_x - closestpoint[0])**2 + (self.trophy_y - closestpoint[1])**2
+        for i in self.respawn_points:
+            dist =  (self.trophy_x - i[0])**2 + (self.trophy_y - i[1])**2
+            if dist <= min_dist:
+                min_dist = dist
+                closestpoint = i
+        cur_dist = (self.trophy_x - self.current_pos[0])**2 + (self.trophy_y - self.current_pos[0])**2
+        if cur_dist <= min_dist:
+            min_dist = cur_dist
+            closestpoint = self.current_pos
+        self.startpoint.append(closestpoint[0])
+        self.startpoint.append(closestpoint[1])
 
         if self.position > 0:
             self.database.control.left()
