@@ -57,10 +57,10 @@ class Brain2:
             # self.left()
             # EXAMPLE CODE1: 속도 3으로 유지하면서 오른쪽으로 회전하기
 
-            if self.database.car.speed <= -3:
-                self.up()
-            elif self.database.car.speed > -2:
-                self.down()
+            # if self.database.car.speed <= -3:
+            #     self.up()
+            # elif self.database.car.speed > -2:
+            #     self.down()
 
     def up(self, num: int = 1):
         for i in range(num):
