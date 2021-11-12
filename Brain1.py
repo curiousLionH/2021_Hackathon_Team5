@@ -1,6 +1,7 @@
 import time
 import pygame
 import numpy as np
+from math import sin, cos, atan2, pi, radians, degrees
 
 from Crosswalk import Crosswalk
 
@@ -201,6 +202,10 @@ class Brain1:
         else:
              self.right(steering_gain)
 
+        # if self.position > 0:
+        #     self.left(steering_gain)
+        # else:
+        #     self.right(steering_gain)
 
         if self.database.lidar.data[89] < 70 and front_left < front_right:
             self.degree = self.database.car.direction
@@ -269,6 +274,22 @@ class Brain1:
             self.steer_flag = 0
 
 
+    def velocity_control(self, speed):
+        if self.database.car.speed >= speed:
+            self.down()
+        else:
+            self.up()
+
+
+    # def first_waypoint(self):
+    #     current_pos = self.database.car.position
+    #     (trophy_x, trophy_y) = self.database.v2x_data['Trophy']
+    #     if current_pos[1] >= 400:
+    #         if current_pos[0] <= 350:
+    #             # 4, 2
+    #             trophy_x - 
+
+
     def respawn(self):
             closestpoint = self.respawn_points[0]
             min_dist = (self.trophy_x - closestpoint[0])**2 + (self.trophy_y - closestpoint[1])**2
@@ -283,3 +304,42 @@ class Brain1:
                 closestpoint = self.current_pos
             self.startpoint.append(closestpoint[0])
             self.startpoint.append(closestpoint[1])
+
+
+
+    def GPS_tracking(self, total_track):
+        self.velocity_control(7)
+        steering_gain = 0.01
+        lateral_error_gain = 1
+        heading_error_gain = 1
+
+        if self.database.car.position is not None and self.database.car.direction is not None and self.database.car.speed is not None:
+            
+            p_curr = self.database.car.position
+            car_yaw = radians(self.database.car.direction)
+
+            x_local = cos(car_yaw) * (total_track[0] - p_curr[0]) - sin(car_yaw) * (total_track[1] - p_curr[1])
+            y_local = sin(car_yaw) * (total_track[0] - p_curr[0]) + cos(car_yaw) * (total_track[1] - p_curr[1])
+
+            distance = ((p_curr[0] - total_track[0]) ** 2 + (p_curr[1] - total_track[1]) ** 2) ** 0.5
+            distance = distance.tolist()
+            min_index = distance.index(min(distance))
+
+            lateral_error = x_local[min_index]
+            heading_error = atan2(x_local[min_index + 5] - x_local[min_index], y_local[min_index + 5] - y_local[min_index])
+
+            wheelcmd_lateral = degrees(atan2(lateral_error_gain * lateral_error, self.database.car.speed))
+            wheelcmd_heading = degrees(heading_error_gain * heading_error)
+            wheelcmd = round(steering_gain * (wheelcmd_heading + wheelcmd_lateral))
+            print(wheelcmd)
+
+            if wheelcmd < 0:
+                self.left(abs(wheelcmd))
+            elif wheelcmd == 0:
+                pass
+            else:
+                self.right(abs(wheelcmd))
+
+
+
+
