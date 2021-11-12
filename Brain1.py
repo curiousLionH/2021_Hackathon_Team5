@@ -2,6 +2,8 @@ import time
 import pygame
 import numpy as np
 
+from Crosswalk import Crosswalk
+
 class Brain1:
     def __init__(self, database):
         self.database = database
@@ -95,7 +97,7 @@ class Brain1:
             #     self.go(self.database.lidar.data[90],self.database.car.speed)
 
             if self.database.lidar.data is not None:
-
+                
                 if self.steer_flag == 0:
                     self.steer_forward(self.database.lidar.data[90], self.database.car.speed)
                 elif self.steer_flag == 1:
@@ -104,6 +106,7 @@ class Brain1:
                     self.steer_left()
                 else:
                     self.steer_backward()
+                #print(self.database.v2x_data.keys())
     
                 
 
@@ -179,32 +182,48 @@ class Brain1:
         
 
     def steer_forward(self, lidar : int, speed : int):
+
+        steering_gain = 1
+
+
         front_right = np.average(self.database.lidar.data[0:59])
         front_left = np.average(self.database.lidar.data[120:179])
         
         self.position = (front_left - front_right) / (front_right + front_left)
     
+        #if abs(self.position) < 0.1:
+        #     steering_gain = 1
+        # elif abs(self.position) > 0.1 and abs(self.position):
+        #     steering_gain = 2
+
         if self.position > 0:
-            self.database.control.left()
+             self.left(steering_gain)
         else:
-            self.database.control.right()
+             self.right(steering_gain)
 
 
-        if self.database.lidar.data[89] < 100 and front_left < front_right:
+        if self.database.lidar.data[89] < 70 and front_left < front_right:
             self.degree = self.database.car.direction
+            
             self.steer_flag = 1
-        elif self.database.lidar.data[89] < 100 and front_left > front_right:
+        elif self.database.lidar.data[89] < 70 and front_left > front_right:
+            self.degree = self.database.car.direction
+            self.steer_flag = -1
+        elif self.database.lidar.data[89] < 70:
             self.degree = self.database.car.direction
             self.steer_flag = -1
             
+            
+            
 
-        if lidar==100:
-                self.up(15)
-        elif lidar!=100:
-            if speed>5:
-                self.down(3)
+        if lidar == 100:
+            self.velocity_control(15)
+        elif lidar < 100:
+            self.velocity_control(7)
+            # if speed > 5:
+            #     self.down(3)
 
-        print('forward', self.position, self.database.car.direction)
+        print('forward', self.position, self.database.car.direction, steering_gain)
 
 
 
@@ -215,20 +234,37 @@ class Brain1:
         pass
 
     def steer_right(self):
+        self.velocity_control(5)
 
         # print('right', self.degree, self.database.car.direction, self.database.lidar.data[89])
         self.right(8)
-
+        self.right(8)
+        
+        self.right(8)
+        self.right(8)
+        self.right(8)
+        self.right(8)
+        self.right(8)
+        self.right(8)
         if abs(self.database.car.direction - self.degree) >= 90:
             self.steer_flag = 0
+               
 
 
 
     def steer_left(self):
+        self.velocity_control(5)
 
         # print('left', self.degree, self.database.car.direction, self.database.lidar.data[89])
         self.left(8)
-        print(self.database.car.direction)
+        self.left(8)
+        
+        self.left(8)
+        self.left(8)
+        self.left(8)
+        self.left(8)
+        self.left(8)
+        self.left(8)
         if abs(self.database.car.direction - self.degree) >= 90:
             self.steer_flag = 0
 
