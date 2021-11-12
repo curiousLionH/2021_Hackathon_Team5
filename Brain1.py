@@ -80,9 +80,9 @@ class Brain1:
             # print(self.crossing.keys())
 
             self.steer_forward()
-            if self.database.car.speed <= 2:
+            if self.database.car.speed <= 7:
                 self.up()
-            elif self.database.car.speed > 3:
+            elif self.database.car.speed > 7:
                 self.down()
             
             
@@ -154,7 +154,7 @@ class Brain1:
             if min_dist > dist:
                 min_dist = dist
                 min_index = i
-        print(min_index)        # 테스트용
+        # print(min_index)        # 테스트용
         self.global_path.append(min_index)
         
 
@@ -162,22 +162,23 @@ class Brain1:
 
     def steer_forward(self):
         if self.database.lidar.data is not None:
-            front_right = np.average(self.database.lidar.data[0:89])
-            front_left = np.average(self.database.lidar.data[91:179])
+            front_right = np.average(self.database.lidar.data[0:59])
+            front_left = np.average(self.database.lidar.data[120:179])
             
             # print(front_right, front_left)
 
             # self.position = (self.database.lidar.data[179] - self.database.lidar.data[0]) / (self.database.lidar.data[0] + self.database.lidar.data[179])
             self.position = (front_left - front_right) / (front_right + front_left)
 
-            if self.position < 0:
-                self.left(abs(self.position))
+            if self.position > 0:
+                self.database.control.left()
             else:
-                self.right(self.position)
+                self.database.control.right()
+            
                 
 
 
-        print(self.position)
+            print(self.position, self.database.car.direction)
 
 
 
